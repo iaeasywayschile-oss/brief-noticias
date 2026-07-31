@@ -1,0 +1,24 @@
+# Lista de medios. Formato:  Bloque | Nombre | URL del RSS
+# Bloque tiene que ser exactamente: Global, Chile o Argentina
+# Para sacar un medio, ponele un # adelante. Para agregar otro, copia una linea.
+#
+# Los medios cambian la direccion de sus RSS cada tanto. Si alguno deja de
+# responder, la pagina te lo avisa arriba con su nombre y lo corregis aca.
+
+Global | BBC Mundo | https://feeds.bbci.co.uk/mundo/rss.xml
+Global | DW Espanol | https://rss.dw.com/rdf/rss-sp-all
+Global | France 24 | https://www.france24.com/es/rss
+Global | El Pais | https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada
+Global | Euronews | https://es.euronews.com/rss
+
+Chile | BioBioChile | https://www.biobiochile.cl/rss/
+Chile | La Tercera | https://www.latercera.com/feed/
+Chile | Emol | https://www.emol.com/rss/rss.asp?canal=todas
+Chile | Cooperativa | https://www.cooperativa.cl/noticias/site/tax/port/all/rss_2_0.xml
+Chile | El Mostrador | https://www.elmostrador.cl/feed/
+
+Argentina | Infobae | https://www.infobae.com/feeds/rss/
+Argentina | Clarin | https://www.clarin.com/rss/lo-ultimo/
+Argentina | La Nacion | https://www.lanacion.com.ar/arc/outboundfeeds/rss/
+Argentina | Pagina 12 | https://www.pagina12.com.ar/rss/portada
+Argentina | Ambito | https://www.ambito.com/rss/pages/home.xml

@@ -1,0 +1,27 @@
+# Lista de medios. Formato:  Bloque | Nombre | URL del RSS
+# Bloque tiene que ser exactamente: Global, Chile o Argentina
+# Para sacar un medio, ponele un # adelante. Para agregar otro, copia una linea.
+#
+# NOTA: para Chile y Argentina usamos feeds de Google News. Son direcciones
+# estables (no cambian) y adentro ya vienen decenas de medios locales. Asi
+# evitamos el problema de que cada diario cambie la direccion de su RSS.
+
+# --- GLOBALES (RSS propio de cada medio, funcionan bien) ---
+Global | BBC Mundo | https://feeds.bbci.co.uk/mundo/rss.xml
+Global | DW Espanol | https://rss.dw.com/rdf/rss-sp-all
+Global | France 24 | https://www.france24.com/es/rss
+Global | Google News Mundo | https://news.google.com/rss?hl=es-419&gl=CL&ceid=CL:es-419
+
+# --- CHILE (via Google News, agrega Emol, La Tercera, BioBio, etc.) ---
+Chile | Google News Chile | https://news.google.com/rss/search?q=Chile+when:1d&hl=es-419&gl=CL&ceid=CL:es-419
+Chile | Economia Chile | https://news.google.com/rss/search?q=Chile+economia+OR+dolar+OR+IPSA+when:1d&hl=es-419&gl=CL&ceid=CL:es-419
+
+# --- ARGENTINA (via Google News, agrega Infobae, Clarin, La Nacion, etc.) ---
+Argentina | Google News Argentina | https://news.google.com/rss/search?q=Argentina+when:1d&hl=es-419&gl=AR&ceid=AR:es-419
+Argentina | Economia Argentina | https://news.google.com/rss/search?q=Argentina+economia+OR+dolar+OR+Milei+when:1d&hl=es-419&gl=AR&ceid=AR:es-419
+
+# --- CHINA / IMPORTACION (Google News, temas de comercio y fletes) ---
+# Estas ademas alimentan la columna China. El filtro por palabras clave del
+# agregador tambien pesca noticias de China que aparezcan en las otras columnas.
+Global | China comercio | https://news.google.com/rss/search?q=China+aranceles+OR+flete+OR+importacion+when:2d&hl=es-419&gl=CL&ceid=CL:es-419
+Global | Fletes maritimos | https://news.google.com/rss/search?q=flete+maritimo+OR+contenedor+OR+naviera+when:2d&hl=es-419&gl=CL&ceid=CL:es-419

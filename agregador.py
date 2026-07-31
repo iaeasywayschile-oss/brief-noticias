@@ -29,7 +29,28 @@ HORAS = 24
 POR_BLOQUE = 20
 AGENTE = "Mozilla/5.0 (compatible; portada-titulares/1.0)"
 
-ORDEN = ["Global", "Chile", "Argentina"]
+ORDEN = ["Global", "Chile", "Argentina", "China / Importacion"]
+
+# Palabras que marcan una noticia como relevante para importar de China.
+# Un titular de CUALQUIER medio que mencione alguna de estas se copia
+# tambien a la columna China / Importacion. Es un filtro por tema, no por medio.
+PISTAS_CHINA = [
+    # fletes y logistica
+    "flete", "contenedor", "naviera", "maersk", "puerto de", "carga maritima",
+    "transporte maritimo", "buque", "shanghai", "shenzhen", "cantón", "canton",
+    "ningbo", "ruta maritima", "cadena de suministro", "cadena de abastecimiento",
+    "logistica", "estrecho de ormuz", "canal de suez", "panama",
+    # comercio y aduana
+    "arancel", "aduana", "importacion", "importa", "exportacion china",
+    "comercio con china", "guerra comercial", "aduanero", "sobretasa",
+    "antidumping", "salvaguardia", "tratado de libre comercio", "tlc",
+    # china macro
+    "china", "yuan", "pekin", "beijing", "manufactura china", "fabrica china",
+    "pmi de china", "economia china", "banco popular de china", "xi jinping",
+    "aliexpress", "alibaba", "temu", "shein",
+    # productos / electro
+    "electrodomestico", "linea blanca", "importadores",
+]
 
 CATEGORIAS = ["Economia", "Politica", "Sociedad", "Tecnologia", "Deporte", "General"]
 COLOR_CAT = {
@@ -75,6 +96,12 @@ def fold(t):
     t = (t or "").lower()
     t = unicodedata.normalize("NFKD", t)
     return "".join(c for c in t if not unicodedata.combining(c))
+
+
+def es_china(titulo, bajada):
+    """True si el titular menciona algo relevante para importar de China."""
+    t = " " + fold(titulo + " " + (bajada or "")) + " "
+    return any(p in t for p in PISTAS_CHINA)
 
 
 def leer_feeds():
@@ -210,7 +237,8 @@ h1{font-size:19px;margin:0 0 6px;font-weight:650}
   background:transparent;font-family:ui-monospace,Menlo,Consolas,monospace}
 .filtro:hover{color:var(--txt);border-color:var(--dim)}
 .filtro.on{background:var(--txt);color:var(--ink);border-color:var(--txt);font-weight:600}
-.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.col-china{background:#0f1620}
 .col{border-right:1px solid var(--line);padding:0 18px 30px}
 .col:last-child{border-right:none}
 h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
@@ -233,7 +261,8 @@ article a.tit:hover{color:var(--key)}
 .vacio{font-size:12.5px;color:var(--dimmer);padding:10px 0}
 footer{padding:20px 24px;border-top:1px solid var(--line);color:var(--dimmer);font-size:11.5px;
   background:var(--ink2);font-family:ui-monospace,Menlo,Consolas,monospace}
-@media (max-width:820px){.cols{grid-template-columns:1fr}
+@media (max-width:1000px){.cols{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.cols{grid-template-columns:1fr}
   .col{border-right:none;border-bottom:1px solid var(--line)}}"""
     extra = "\n".join(f'.t-{c.lower()}{{color:{fg};border-color:{bd};background:{bg}}}'
                       for c, (fg, bd, bg) in COLOR_CAT.items())
@@ -247,18 +276,24 @@ def render(grupos, fallidos, ahora):
 
     columnas = ""
     for bloque in ORDEN:
+        es_col_china = bloque == "China / Importacion"
         notas = grupos.get(bloque, [])
         arts = ""
         for n in notas:
             c = n["categoria"]
             bajada = f'<p class="bajada">{html.escape(n["bajada"])}</p>' if n["bajada"] else ""
+            # En la columna China, mostrar de que pais salio el titular.
+            origen = ""
+            if es_col_china and n["bloque"] != "China / Importacion":
+                origen = f' &middot; {html.escape(n["bloque"])}'
             arts += (f'<article data-cat="{c.lower()}">'
                      f'<span class="tag t-{c.lower()}">{c}</span>'
                      f'<a class="tit" href="{html.escape(n["enlace"])}" target="_blank" rel="noopener">{html.escape(n["titulo"])}</a>'
-                     f'{bajada}<div class="fuente"><b>{html.escape(n["medio"])}</b> · {hace_cuanto(n["fecha"], ahora)}</div></article>')
+                     f'{bajada}<div class="fuente"><b>{html.escape(n["medio"])}</b>{origen} &middot; {hace_cuanto(n["fecha"], ahora)}</div></article>')
         if not arts:
-            arts = '<p class="vacio">Sin titulares nuevos.</p>'
-        columnas += (f'<div class="col"><h2>{bloque} <span>&mdash; {len(notas)}</span></h2>'
+            arts = '<p class="vacio">Sin titulares del tema hoy.</p>' if es_col_china else '<p class="vacio">Sin titulares nuevos.</p>'
+        clase_col = "col col-china" if es_col_china else "col"
+        columnas += (f'<div class="{clase_col}"><h2>{bloque} <span>&mdash; {len(notas)}</span></h2>'
                      f'<div class="lista">{arts}</div>'
                      f'<p class="vacio" data-empty hidden>Nada en esta categoria.</p></div>')
 
@@ -313,10 +348,17 @@ def main():
             print(f"FALLA {medio}: {err}")
 
     grupos = {}
-    for b in ORDEN:
+    # Columnas geograficas: cada titular en su bloque de origen.
+    for b in ["Global", "Chile", "Argentina"]:
         db = [n for n in notas if n["bloque"] == b]
         db.sort(key=lambda n: n["fecha"] or corte, reverse=True)
         grupos[b] = db[:POR_BLOQUE]
+
+    # Columna China / Importacion: titulares de CUALQUIER bloque que hablen
+    # del tema. Se muestra de que pais venia con una marca al lado.
+    china = [n for n in notas if es_china(n["titulo"], n["bajada"])]
+    china.sort(key=lambda n: n["fecha"] or corte, reverse=True)
+    grupos["China / Importacion"] = china[:POR_BLOQUE]
 
     with open(os.path.join(RAIZ, "titulares.html"), "w", encoding="utf-8") as f:
         f.write(render(grupos, fallidos, ahora))

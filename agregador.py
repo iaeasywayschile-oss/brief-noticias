@@ -196,9 +196,20 @@ def extraer(xml_bytes, medio, bloque):
 
         if not titulo or not enlace:
             continue
+
+        # Google News pone el medio al final del titulo: "Titular - El Medio".
+        # Lo separamos para mostrar el nombre real del diario en vez de "Google News".
+        medio_real = medio
+        if medio.lower().startswith(("google news", "economia", "china comercio",
+                                     "fletes")):
+            m = re.match(r"^(.*)\s[-\u2013]\s([^-\u2013]{2,40})$", titulo)
+            if m:
+                titulo = m.group(1).strip()
+                medio_real = m.group(2).strip()
+
         salida.append({
             "titulo": titulo, "enlace": enlace, "bajada": bajada,
-            "fecha": fecha, "medio": medio, "bloque": bloque,
+            "fecha": fecha, "medio": medio_real, "bloque": bloque,
             "categoria": clasificar(titulo, seccion),
             "clave": hashlib.md5(re.sub(r"[^a-z0-9]", "", titulo.lower()[:70]).encode()).hexdigest(),
         })
